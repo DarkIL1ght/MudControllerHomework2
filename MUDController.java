@@ -1,85 +1,148 @@
-package Game.controller.MUDController;
+    package Game.controller.MUDController;
 
-import Game.player.Player;
+    import Game.Item.Item;
+    import Game.player.Player;
+    import Game.Entities.Room;
+    import Game.GAMEENTITY.IGameEntity;
 
-public class MUDController {
+    import java.util.HashMap;
+    import java.util.Scanner;
 
+    public class MUDController {
+        private final Player player;
+        private boolean running;
+        private final HashMap<String, Room> gameWorld;
 
-    //private final Player player;
-    private boolean running;
+        public MUDController(Player player) {
+            this.player = player;
+            this.running = true;
+            this.gameWorld = new HashMap<>();
+            initializeGameWorld();
+        }
 
-    /**
-     * Constructs the controller with a reference to the current player.
-     */
-    public MUDController(Player player) {
-        // Initialize fields here (if needed)
+        public void runGameLoop() {
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("Welcome to the MUD game! Type 'help' for available commands.");
+
+            while (running) {
+                System.out.print("> ");
+                String input = scanner.nextLine().trim();
+                if (input.equalsIgnoreCase("quit")) {
+                    running = false;
+                    System.out.println("Goodbye!");
+                    continue;
+                }
+                handleInput(input);
+            }
+            scanner.close();
+        }
+        private void initializeGameWorld() {
+            Room mainHall = new Room("Main Hall", "A grand hall with a chandelier and a mysterious door.");
+            Room treasureRoom = new Room("Treasure Room", "A room filled with gold and jewels.");
+            Room guardRoom = new Room("Guard Room", "A dimly lit room with a fierce guard.");
+            Room library = new Room("Library", "A quiet room filled with ancient books.");
+
+            mainHall.addExit("north", treasureRoom);
+            mainHall.addExit("east", guardRoom);
+            guardRoom.addExit("west", mainHall);
+            guardRoom.addExit("south", library);
+            library.addExit("north", guardRoom);
+            treasureRoom.addExit("south", mainHall);
+
+            mainHall.addItems(new Item("Sword", "A sharp blade for combat."));
+            treasureRoom.addItems(new Item("Gold Coin", "A shiny gold coin."));
+            library.addItems(new Item("Ancient Book", "A dusty book with mysterious writings."));
+
+            gameWorld.put("Main Hall", mainHall);
+            gameWorld.put("Treasure Room", treasureRoom);
+            gameWorld.put("Guard Room", guardRoom);
+            gameWorld.put("Library", library);
+
+            player.setCurrentRoom(mainHall);
+        }
+        public void handleInput(String input) {
+            if (input == null || input.isEmpty()) {
+                System.out.println("Invalid command");
+                return;
+            }
+
+            String[] parts = input.split(" ", 2);
+            String command = parts[0].toLowerCase();
+            String argument = parts.length > 1 ? parts[1] : "";
+
+            switch (command) {
+                case "look":
+                    lookAround();
+                    break;
+                case "move":
+                    move(argument);
+                    break;
+                case "pick":
+                    pickUp(argument);
+                    break;
+                case "inventory":
+                    checkInventory();
+                    break;
+                case "help":
+                    showHelp();
+                    break;
+                default:
+                    System.out.println("Unknown command. Type 'help' for available commands.");
+            }
+        }
+
+        private void lookAround() {
+            Room currentRoom = (Room) player.getCurrentRoom();
+            currentRoom.describe();
+            System.out.println("Items in room:");
+            currentRoom.getItems().forEach(IGameEntity::describe);
+        }
+
+        private void move(String direction) {
+            Room currentRoom = (Room) player.getCurrentRoom();
+            Room nextRoom = currentRoom.getExit(direction);
+
+            if (nextRoom != null) {
+                player.setCurrentRoom(nextRoom);
+                System.out.println("You moved " + direction);
+                lookAround();
+            } else {
+                System.out.println("There's no exit in that direction!");
+            }
+        }
+
+        private void pickUp(String arg) {
+            if (!arg.startsWith("up ")) {
+                System.out.println("Usage: 'pick up <item>'");
+                return;
+            }
+
+            String itemName = arg.substring(3).trim();
+            Room currentRoom = (Room) player.getCurrentRoom();
+            IGameEntity item = currentRoom.removeItem(itemName);
+
+            if (item != null) {
+                player.addItemToInventory(item);
+                System.out.println("Picked up: " + itemName);
+            } else {
+                System.out.println("Item not found: " + itemName);
+            }
+        }
+
+        private void checkInventory() {
+            System.out.println("Your inventory:");
+            player.getInventory().forEach(item ->
+                    System.out.println("- " + ((Item) item).getName())
+            );
+        }
+
+        private void showHelp() {
+            System.out.println("Available commands:");
+            System.out.println("look - Show current room description");
+            System.out.println("move <direction> - Move in specified direction");
+            System.out.println("pick up <item> - Pick up an item");
+            System.out.println("inventory - Show your inventory");
+            System.out.println("help - Show this help message");
+            System.out.println("quit - Exit the game");
+        }
     }
-
-    /**
-     * Main loop method that repeatedly reads input from the user
-     * and dispatches commands until the game ends.
-     */
-    public void runGameLoop() {
-        // TODO: Implement a loop that:
-        // 1) Prints a prompt (e.g., "> ")
-        // 2) Reads user input
-        // 3) Calls handleInput(input)
-        // 4) Terminates when 'running' is set to false
-    }
-
-    /**
-     * Handle a single command input (e.g. 'look', 'move forward', 'pick up sword').
-     */
-    public void handleInput(String input) {
-        // TODO:
-        // 1) Parse the input into a command and optionally an argument
-        // 2) Use a switch/case (or if/else) to call the correct method below
-        //    based on the command word
-    }
-
-    /**
-     * Look around the current room: describe it and show items/NPCs.
-     */
-    private void lookAround() {
-        // TODO: Print information about the player's current room
-    }
-
-    /**
-     * Move the player in a given direction (forward, back, left, right).
-     */
-    private void move(String direction) {
-        // TODO: Attempt to move to the next room in the given direction
-        //       If there's no room in that direction, print an error message
-        //       If successfully moved, describe the new room
-    }
-
-    /**
-     * Pick up an item (e.g. "pick up sword").
-     */
-    private void pickUp(String arg) {
-        // TODO:
-        // 1) Parse out the item name if 'arg' starts with "up "
-        // 2) Check if that item exists in the current room
-        // 3) Remove from room, add to player's inventory
-    }
-
-    /**
-     * Check the player's inventory.
-     */
-    private void checkInventory() {
-        // TODO: List the items in the player's inventory
-        //       If no items, indicate that the inventory is empty
-    }
-
-    /**
-     * Show help commands
-     */
-    private void showHelp() {
-        // TODO: Print a list of available commands and brief instructions
-    }
-
-    /**
-     * (Optional) Add any other methods (e.g., attack, open door, talk, etc.)
-     * if you want to extend the game logic further.
-     */
-}

@@ -10,58 +10,11 @@
 
     public class MUDController {
         private final Player player;
-        private boolean running;
-        private final HashMap<String, Room> gameWorld;
+
 
         public MUDController(Player player) {
             this.player = player;
-            this.running = true;
-            this.gameWorld = new HashMap<>();
-            initializeGameWorld();
-        }
 
-        public void runGameLoop() {
-            Scanner scanner = new Scanner(System.in);
-            System.out.println("Welcome to the MUD game! Type 'help' for available commands.");
-
-            while (running) {
-                System.out.print("> ");
-                String input = scanner.nextLine().trim();
-                if (input.equalsIgnoreCase("quit")) {
-                    running = false;
-                    System.out.println("Goodbye!");
-                    continue;
-                }
-                handleInput(input);
-            }
-            scanner.close();
-        }
-        private void initializeGameWorld() {
-            Room mainHall = new Room("Main Hall", "A grand hall with a chandelier and a mysterious door.");
-            Room treasureRoom = new Room("Treasure Room", "A room filled with gold and jewels.");
-            Room guardRoom = new Room("Guard Room", "A dimly lit room with a fierce guard.");
-            Room library = new Room("Library", "A quiet room filled with ancient books.");
-
-            mainHall.addExit("north", treasureRoom);
-            mainHall.addExit("east", guardRoom);
-            guardRoom.addExit("west", mainHall);
-            guardRoom.addExit("south", library);
-            library.addExit("north", guardRoom);
-            treasureRoom.addExit("south", mainHall);
-
-            mainHall.addItems(new Item("Sword", "A sharp blade for combat."));
-            treasureRoom.addItems(new Item("Gold Coin", "A shiny gold coin."));
-            library.addItems(new Item("Ancient Book", "A dusty book with mysterious writings."));
-            library.addItems(new Item("Ancient Scroll", "An old parchment with unknown symbols."));
-            System.out.println("Library items: " + library.getItems().size());
-
-
-            gameWorld.put("Main Hall", mainHall);
-            gameWorld.put("Treasure Room", treasureRoom);
-            gameWorld.put("Guard Room", guardRoom);
-            gameWorld.put("Library", library);
-
-            player.setCurrentRoom(mainHall);
         }
         public void handleInput(String input) {
             if (input == null || input.isEmpty()) {

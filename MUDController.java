@@ -52,6 +52,9 @@
             mainHall.addItems(new Item("Sword", "A sharp blade for combat."));
             treasureRoom.addItems(new Item("Gold Coin", "A shiny gold coin."));
             library.addItems(new Item("Ancient Book", "A dusty book with mysterious writings."));
+            library.addItems(new Item("Ancient Scroll", "An old parchment with unknown symbols."));
+            System.out.println("Library items: " + library.getItems().size());
+
 
             gameWorld.put("Main Hall", mainHall);
             gameWorld.put("Treasure Room", treasureRoom);
@@ -94,9 +97,17 @@
         private void lookAround() {
             Room currentRoom = (Room) player.getCurrentRoom();
             currentRoom.describe();
-            System.out.println("Items in room:");
-            currentRoom.getItems().forEach(IGameEntity::describe);
+
+            if (currentRoom.getItems().isEmpty()) {
+                System.out.println("No items in this room.");
+            } else {
+                System.out.println("Items in room:");
+                for (Item item : currentRoom.getItems()) {
+                    item.describe();
+                }
+            }
         }
+
 
         private void move(String direction) {
             Room currentRoom = (Room) player.getCurrentRoom();
@@ -112,7 +123,7 @@
         }
 
         private void pickUp(String arg) {
-            if (!arg.startsWith("up ")) {
+            if (!arg.toLowerCase().startsWith("up ")) {
                 System.out.println("Usage: 'pick up <item>'");
                 return;
             }
